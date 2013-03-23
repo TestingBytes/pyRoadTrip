@@ -1,38 +1,57 @@
-import csv
-import StringIO
+import sys
 
-def filter_lines(reader):
-	
-	fuelRecordsFound = 0
+class RoadTripVehicleFuelRecord:
+	def __init__(self, csvRow):
+		values = csvRow.split(",")
 
-	lines = []
-
-	for row in reader:
-		if fuelRecordsFound == 0:
-			if "FUEL RECORDS" in row:
-				fuelRecordsFound = 1
-			else:
-				continue
-		else:
-			if ( len(row.strip()) > 0 ):
-				lines.append(row)
-			else:
-				break
-	return lines
+		self.Odometer 		= values[0]
+		self.TripDistance 	= values[1]
+		self.Date 			= values[2]
+		self.FillAmount 	= values[3]
+		self.FillUnits 		= values[4]
+		self.PricePerUnit 	= values[5]
+		self.TotalPrice 	= values[6]
+		self.PartialFill 	= values[7]
 
 class RoadTripVehicle:
 	def __init__(self, csvFile):
+		section = ""
+		self.Version = ""
+		self.Language = ""
+		self.FuelRecords = []
+
+		i = -1
 		for line in csvFile:
-			print line
+			i+=1
+			
+			if section and not line.strip():
+				section = ""
+				print str(i) + ": clearing section"
+				continue
 
+			if "Version,Language" in line:
+				section = line
+				print str(i) + ": found Version/Language Section"
+				continue
 
-csvPath = '/Users/sam/Dropbox/Road Trip Data/iPhone 5/Exported CSV Files/2005 Toyota Echo 2013-3-18.csv'
+			if "Version,Language" in section:
+				values = line.split(",")
+				self.Version = values[0]
+				self.Language = values[1]
+				print str(i) + ": Saving Version/Language values"
+				continue
+
+			if "FUEL RECORDS" in line:
+				section = line
+				print str(i) + ": found " + line + " Section"
+				continue
+
+			if "FUEL RECORDS" in section:
+				record = RoadTripVehicleFuelRecord(line)
+				self.FuelRecords.append(record)
+				print str(i) + " added " + section
+				continue
+
+csvPath = sys.argv[1]
 csvFile = file(csvPath,"r")
-reader = RoadTripVehicle(csvFile)
-
-
-#lines = filter_lines(reader)
-
-# First, find the vehicle
-
-
+vehicle = RoadTripVehicle(csvFile)
