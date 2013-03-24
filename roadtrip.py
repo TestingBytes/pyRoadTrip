@@ -3,10 +3,9 @@ import datetime
 import logging
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
+#log.setLevel(logging.DEBUG)
 
 ch = logging.StreamHandler(sys.stdout)
-ch.setLevel(logging.DEBUG)
 
 log_formatter = logging.Formatter("{asctime} {levelname} {message}", style='{')
 ch.setFormatter(log_formatter)
@@ -39,7 +38,9 @@ class RoadTripTireLogRecord:
 
 class RoadTripVehicle:
 	def __init__(self, csvFile):
-		section = ""
+		
+		# Instance Variables
+		self._section = ""
 		self.Version = ""
 		self.Language = ""
 		self.FuelRecords = []
@@ -48,69 +49,35 @@ class RoadTripVehicle:
 		# Logging
 		log = logging.getLogger(__name__)
 
-		i = 0
+		self._i = 0
 		for line in csvFile:
-			i+=1
+			self._i+=1
 			line = line.strip()
-			if section and not line:
-				section = ""
-				log.debug(str(i)+": clearing section")
+			if self._section and not line:
+				self._setSection(line)
+				log.debug(str(self._i)+": clearing section")
 				continue
 
-			if "Version,Language" in line:
-				#_setSection("Version,Language")
-				section = line
-				log.debug(str(i)+": found Version/Language Section")
+			if line in ("Version, Language", "FUEL RECORDS", "TIRE LOG"):
+				self._setSection(line)
+				log.debug(str(self._i)+": found " + sectionName + " Section")
 				continue
 
-			if "Version,Language" in section:
+			if "Version,Language" in self._section:
 				values = line.split(",")
 				self.Version = values[0]
 				self.Language = values[1]
-				log.debug(str(i) + ": Saving Version/Language values")
+				log.debug(str(self._i) + ": Saving Version/Language values")
 				continue
 
-			if "FUEL RECORDS" in line:
-				section = line
-				log.debug(str(i) + ": found " + line + " Section")
-				continue
-
-			if "FUEL RECORDS" in section:
+			if "FUEL RECORDS" in self._section:
 				if "Odometer" not in line:
-					record = RoadTripVehicleFuelRecord(line)
-					self.FuelRecords.append(record)
-					log.debug(str(i) + ": added " + section)
-					continue
-				else:
-					continue
-
-			if "TIRE LOG" in line:
-				section = line
-				log.debug(str(i) + ": found " + line + " Section")
+					self.FuelRecords.append( RoadTripVehicleFuelRecord(line) )
+					log.debug(str(self._i) + ": added " + self._section)
 				continue
 
-			if "TIRE LOG" in section:
+			if "TIRE LOG" in self._section:
 				if "Name" not in line:
-					section = line
-					log.debug(str(i) + ": added " + section)
-					record = RoadTripTireLogRecord(line)
-					self.TireLogRecords.append(record)
-					continue
-				else:
-					continue
-
-	#def _setSection(self, sectionName):
-
-	#def _addRecord(self, sectionName):
-
-	#def _clearSection(self):
-
-
-csvPath = sys.argv[1]
-csvFile = open(csvPath,"r")
-vehicle = RoadTripVehicle(csvFile)
-
-for record in vehicle.FuelRecords:
-	strout = '{0}: {1}{2} @ {3} $/{2}, {4} km'.format(
-		record.Date,record.FillAmount,record.FillUnits,record.PricePerUnit,record.Odometer)
-	log.debug(strout)
+					self.TireLogRecords.append( RoadTripTireLogRecord(line) )
+					log.debug(str(self._i) + ": added " + self._section)
+				continue
