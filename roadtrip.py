@@ -54,13 +54,13 @@ class RoadTripVehicle:
 			self._i+=1
 			line = line.strip()
 			if self._section and not line:
-				self._setSection(line)
+				self._section = line
 				log.debug(str(self._i)+": clearing section")
 				continue
 
 			if line in ("Version, Language", "FUEL RECORDS", "TIRE LOG"):
-				self._setSection(line)
-				log.debug(str(self._i)+": found " + sectionName + " Section")
+				self._section = line
+				log.debug(str(self._i)+": found " + self._section + " Section")
 				continue
 
 			if "Version,Language" in self._section:
