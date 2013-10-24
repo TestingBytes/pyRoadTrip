@@ -21,3 +21,7 @@ Output:
     2013-02-14: 41.699L @ 1.039 $/L, 118409 km
     2013-02-27: 38.063L @ 1.079 $/L, 119046 km
     2013-03-11: 41.434L @ 1.099 $/L, 119674 km
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/TestingBytes/pyroadtrip/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
